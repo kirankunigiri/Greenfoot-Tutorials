@@ -1,0 +1,12 @@
+#BlueJ class context
+comment0.target=Player
+comment0.text=\n\ The\ player.\n\ \n\ @author\ Kiran\n\ @version\ 1.0\n
+comment1.params=
+comment1.target=void\ act()
+comment2.params=x
+comment2.target=int\ sign(int)
+comment2.text=\n\ Returns\ 1\ if\ it\ is\ positive,\ -1\ if\ it\ is\ negative,\ or\ 0.\n
+comment3.params=x\ y
+comment3.target=boolean\ place_meeting(int,\ int)
+comment3.text=\n\ Checks\ if\ the\ player\ will\ collide\ with\ an\ object\ at\ a\ new\ position.\n\ Works\ by\ moving\ the\ player\ to\ the\ new\ position,\ checking\ for\ a\ collision,\ \n\ and\ moving\ the\ player\ back.\n
+numComments=4
