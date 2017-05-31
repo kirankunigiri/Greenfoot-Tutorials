@@ -9,9 +9,11 @@ import java.util.List;
 public class Player extends Actor
 {
     // Properties
-    int GRAVITY = 1;
-    int hsp = 0;
-    int vsp = 0;
+    int dx = 0;
+    int dy = 0;
+    
+    // Constants
+    final int GRAVITY = 1;
     final int JUMP_SPEED = 12;
     final int MOVE_SPEED = 4;
     final int TERMINAL_VELOCITY = 16;
@@ -24,43 +26,43 @@ public class Player extends Actor
         boolean key_jump = Greenfoot.isKeyDown("space");
         
         // Convert the inputs
-        int move = key_right + key_left;
-        hsp = move*MOVE_SPEED;
+        int direction = key_right + key_left;
+        dx = direction*MOVE_SPEED;
         
         // Limit the speed (terminal velocity)
-        if (vsp < TERMINAL_VELOCITY) {
-            vsp += GRAVITY;
+        if (dy < TERMINAL_VELOCITY) {
+            dy += GRAVITY;
         }
         
         // Jumping
-        if (place_meeting(getX(), getY() + 1)) {
-            vsp = key_jump ? -JUMP_SPEED : 0;
+        if (willCollideAt(getX(), getY() + 1)) {
+            dy = key_jump ? -JUMP_SPEED : 0;
         }
         
         // Horizontal Collision
-        if (place_meeting(getX() + hsp, getY())) {
-            while (!place_meeting(getX() + sign(hsp), getY())) {
-                setLocation(getX() + sign(hsp), getY());
+        if (willCollideAt(getX() + dx, getY())) {
+            while (!willCollideAt(getX() + getDirection(dx), getY())) {
+                setLocation(getX() + getDirection(dx), getY());
             }
-            hsp = 0;
+            dx = 0;
         }
         
         // Vertical Collision
-        if (place_meeting(getX(), getY() + vsp)) {
-            while (!place_meeting(getX(), getY() + sign(vsp))) {
-                setLocation(getX(), getY() + sign(vsp));
+        if (willCollideAt(getX(), getY() + dy)) {
+            while (!willCollideAt(getX(), getY() + getDirection(dy))) {
+                setLocation(getX(), getY() + getDirection(dy));
             }
-            vsp = 0;
+            dy = 0;
         }
         
         // Update the location
-        setLocation(getX() + hsp, getY() + vsp);
+        setLocation(getX() + dx, getY() + dy);
     }
     
     /**
      * Returns 1 if it is positive, -1 if it is negative, or 0.
      */
-    public int sign(int x) {
+    public int getDirection(int x) {
         if (x > 0) {
             return 1;
         } else if (x < 0) {
@@ -74,7 +76,7 @@ public class Player extends Actor
      * Works by moving the player to the new position, checking for a collision, 
      * and moving the player back.
      */
-    public boolean place_meeting(int x, int y) {
+    public boolean willCollideAt(int x, int y) {
         int oldX = getX();
         int oldY = getY();
         setLocation(x, y);
