@@ -42,7 +42,8 @@ public class Player extends Actor
         // Horizontal Collision
         if (willCollideAt(getX() + dx, getY())) {
             while (!willCollideAt(getX() + getDirection(dx), getY())) {
-                setLocation(getX() + getDirection(dx), getY());
+                //setLocation(getX() + getDirection(dx), getY());
+                move(getDirection(dx), 0);
             }
             dx = 0;
         }
@@ -50,7 +51,8 @@ public class Player extends Actor
         // Vertical Collision
         if (willCollideAt(getX(), getY() + dy)) {
             while (!willCollideAt(getX(), getY() + getDirection(dy))) {
-                setLocation(getX(), getY() + getDirection(dy));
+                //setLocation(getX(), getY() + getDirection(dy));
+                move(0, getDirection(dy));
             }
             dy = 0;
         }
@@ -61,7 +63,21 @@ public class Player extends Actor
         //setLocation(getX() + dx, getY() + dy);
         
         // For side scrolling
-        moveWalls(dx, dy);
+        move(dx, dy);
+    }
+    
+    public void move(int dx, int dy) {
+        if ((getX() > 200 || dx > 0) && (getX() < 400 || dx < 0)) {
+            setLocation(getX() + dx, getY());
+        } else {
+            moveWalls(dx, 0);
+        }
+        if ((getY() > 100 || dy > 0) && (getY() < 300 || dy < 0)) {
+            setLocation(getX(), getY() + dy);
+        } else {
+            moveWalls(0, dy);
+        }
+        System.out.println(dy);
     }
     
     public void moveWalls(int x, int y) {
