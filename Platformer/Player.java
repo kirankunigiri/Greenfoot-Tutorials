@@ -56,7 +56,20 @@ public class Player extends Actor
         }
         
         // Update the location
-        setLocation(getX() + dx, getY() + dy);
+        
+        // For fixed map
+        //setLocation(getX() + dx, getY() + dy);
+        
+        // For side scrolling
+        moveWalls(dx, dy);
+    }
+    
+    public void moveWalls(int x, int y) {
+        List<Wall> walls = getWorld().getObjects(Wall.class); 
+        for (int i = 0; i < walls.size(); i++) {
+            Wall wall = walls.get(i);
+            wall.setLocation(wall.getX() - x, wall.getY() - y);
+        }
     }
     
     /**
