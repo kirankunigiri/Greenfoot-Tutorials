@@ -18,7 +18,7 @@ public class Player extends Actor
     final int MOVE_SPEED = 4;
     final int TERMINAL_VELOCITY = 16;
     
-    public void act() 
+    public void act()
     {
         // Obtain inputs
         int key_right = Greenfoot.isKeyDown("right") ? 1 : 0;
