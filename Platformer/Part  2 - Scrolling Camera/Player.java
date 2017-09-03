@@ -68,7 +68,6 @@ public class Player extends Actor
     
     public void move(int dx, int dy, boolean collision) {
         MyWorld world = (MyWorld) getWorld();
-        //System.out.println(world.bottomLeft.getY());
         
         boolean playerWithinCameraBoundsX = (getX() > 200 || dx > 0) && (getX() < 400 || dx < 0);
         boolean cameraOutOfMapBoundsX = (world.bottomLeft.getX() - dx > 0 && dx <= 0) || (world.bottomRight.getX() - dx < world.getWidth() && dx >= 0);
@@ -89,12 +88,12 @@ public class Player extends Actor
         }
 
         boolean playerWithinCameraBoundsY = (getY() > 100 || dy > 0) && (getY() < 300 || dy < 0);
-        boolean cameraOutOfMapBoundsY =  (world.bottomLeft.getY() - dy < world.getHeight() && dy >= 0) || (world.topRight.getY() + dy < 0 && dy <= 0);
+        boolean cameraOutOfMapBoundsY =  (world.bottomLeft.getY() - dy < world.getHeight() && dy >= 0) || (world.topRight.getY() - dy > 0 && dy <= 0);
         if (cameraOutOfMapBoundsY || playerWithinCameraBoundsY) {
             if (cameraOutOfMapBoundsY) {
                 int offset = 0;
                 if (dy < 0) {
-                    offset = 0 - world.topRight.getY();
+                    offset = 0 + world.topRight.getY();
                 } else {
                     offset = world.getHeight() - world.bottomLeft.getY();
                 }
