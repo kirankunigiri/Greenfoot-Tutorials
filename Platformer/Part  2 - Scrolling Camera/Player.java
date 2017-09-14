@@ -11,6 +11,12 @@ public class Player extends Actor
     // Properties
     int dx = 0;
     int dy = 0;
+    private GifImage gifRun;
+    private GifImage gifIdle;
+    private GifImage gifJump;
+    private GifImage gifFall;
+    private Animation animation;
+    boolean flipped = false;
     
     // Constants
     final int GRAVITY = 1;
@@ -18,8 +24,33 @@ public class Player extends Actor
     final int MOVE_SPEED = 4;
     final int TERMINAL_VELOCITY = 16;
     
+    public Player() {
+         // Animation
+        gifRun = new GifImage("images/run.gif");
+        gifIdle = new GifImage("images/idle.gif");
+        gifJump = new GifImage("images/jump.png");
+        gifFall = new GifImage("images/midair.gif");
+        GifImage[] gifImages = {gifRun, gifIdle, gifJump, gifFall};
+        for (int i = 0; i < gifImages.length; i++) {
+            gifImages[i].resizeImages(2, 2);
+        }
+        
+        /*
+        java.util.List<GreenfootImage> imgs = new GifImage("images/run.gif").getImages();
+        GreenfootImage[] images = new GreenfootImage[imgs.size()];
+        for (int i=0; i<imgs.size(); i++) {
+            images[i] = (GreenfootImage)imgs.get(i);
+        }
+        animation = new Animation(this, images);
+        animation.setCycleActs(50);
+        animation.run();
+        animation.setActiveState(true);
+        */
+    }
+    
     public void act() 
     {
+        
         // Obtain inputs
         int key_right = Greenfoot.isKeyDown("right") ? 1 : 0;
         int key_left = Greenfoot.isKeyDown("left") ? -1: 0;
@@ -28,6 +59,30 @@ public class Player extends Actor
         // Convert the inputs
         int direction = key_right + key_left;
         dx = direction*MOVE_SPEED;
+        
+        if (Math.abs(dx) > 0) {
+            if (flipped) {
+                gifRun.flipImage();
+                flipped = !flipped;
+            }
+            setImage(gifRun.getCurrentImage());
+            //animation.setActiveState(true);
+            //animation.run();
+        } else {
+            if (!flipped) {
+                gifRun.flipImage();
+                flipped = !flipped;
+            }
+            setImage(gifIdle.getCurrentImage());
+            //animation.run();
+            //animation.setCycleCount(1);
+        }
+        
+        if (dy < 0) {
+            setImage(gifJump.getCurrentImage());
+        } else if (dy > 0) {
+            setImage(gifFall.getCurrentImage());
+        }
         
         // Limit the speed (terminal velocity)
         if (dy < TERMINAL_VELOCITY) {
