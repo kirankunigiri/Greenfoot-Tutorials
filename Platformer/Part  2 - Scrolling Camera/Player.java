@@ -6,31 +6,32 @@ import java.util.List;
  * @author Kiran
  * @version 1.0
  */
-public class Player extends Actor
+public class Player extends SmoothMover
 {
     // Properties
-    int dx = 0;
-    int dy = 0;
+    double dx = 0;
+    double dy = 0;
     private GifImage gifRun;
     private GifImage gifIdle;
     private GifImage gifJump;
     private GifImage gifFall;
+    private GifImage[] gifImages;
     private Animation animation;
     boolean flipped = false;
     
     // Constants
-    final int GRAVITY = 1;
-    final int JUMP_SPEED = 12;
-    final int MOVE_SPEED = 4;
-    final int TERMINAL_VELOCITY = 16;
+    final double GRAVITY = 0.8;
+    final double JUMP_SPEED = 12;
+    final double MOVE_SPEED = 4;
+    final double TERMINAL_VELOCITY = 16;
     
     public Player() {
          // Animation
-        gifRun = new GifImage("images/run.gif");
-        gifIdle = new GifImage("images/idle.gif");
-        gifJump = new GifImage("images/jump.png");
-        gifFall = new GifImage("images/midair.gif");
-        GifImage[] gifImages = {gifRun, gifIdle, gifJump, gifFall};
+        gifRun = new GifImage("images/run2.gif");
+        gifIdle = new GifImage("images/idle2.gif");
+        gifJump = new GifImage("images/jump2.png");
+        gifFall = new GifImage("images/landing2.png");
+        gifImages = new GifImage[] {gifRun, gifIdle, gifJump, gifFall};
         for (int i = 0; i < gifImages.length; i++) {
             gifImages[i].resizeImages(2, 2);
         }
@@ -52,28 +53,25 @@ public class Player extends Actor
     {
         
         // Obtain inputs
-        int key_right = Greenfoot.isKeyDown("right") ? 1 : 0;
-        int key_left = Greenfoot.isKeyDown("left") ? -1: 0;
+        double key_right = Greenfoot.isKeyDown("right") ? 1 : 0;
+        double key_left = Greenfoot.isKeyDown("left") ? -1: 0;
         boolean key_jump = Greenfoot.isKeyDown("space");
         
         // Convert the inputs
-        int direction = key_right + key_left;
+        double direction = key_right + key_left;
         dx = direction*MOVE_SPEED;
         
         if (Math.abs(dx) > 0) {
-            if (flipped) {
-                gifRun.flipImage();
+            if (dx > 0 && flipped) {
+                flipImages();
+                flipped = !flipped;
+            } else if (dx < 0 && !flipped) {
+                flipImages();
                 flipped = !flipped;
             }
-            setImage(gifRun.getCurrentImage());
             //animation.setActiveState(true);
             //animation.run();
         } else {
-            if (!flipped) {
-                gifRun.flipImage();
-                flipped = !flipped;
-            }
-            setImage(gifIdle.getCurrentImage());
             //animation.run();
             //animation.setCycleCount(1);
         }
@@ -89,24 +87,31 @@ public class Player extends Actor
             dy += GRAVITY;
         }
         
-        // Jumping
-        if (willCollideAt(getX(), getY() + 1)) {
+        // Check if player is on ground
+        if (willCollideAt(getExactX(), getExactY() + 1)) {
+            if (dx == 0) {
+                setImage(gifIdle.getCurrentImage());
+            } else {
+                setImage(gifRun.getCurrentImage());
+            }
+            // Jumping
             dy = key_jump ? -JUMP_SPEED : 0;
         }
         
         // Horizontal Collision
-        if (willCollideAt(getX() + dx, getY())) {
-            while (!willCollideAt(getX() + getDirection(dx), getY())) {
-                //setLocation(getX() + getDirection(dx), getY());
+        
+        if (willCollideAt(getExactX() + dx, getExactY())) {
+            while (!willCollideAt(getExactX() + getDirection(dx), getExactY())) {
+                //setLocation(getExactX() + getDirection(dx), getExactY());
                 move(getDirection(dx), 0, true);
             }
             dx = 0;
         }
         
         // Vertical Collision
-        if (willCollideAt(getX(), getY() + dy)) {
-            while (!willCollideAt(getX(), getY() + getDirection(dy))) {
-                //setLocation(getX(), getY() + getDirection(dy));
+        if (willCollideAt(getExactX(), getExactY() + dy)) {
+            while (!willCollideAt(getExactX(), getExactY() + getDirection(dy))) {
+                //setLocation(getExactX(), getExactY() + getDirection(dy));
                 move(0, getDirection(dy), true);
             }
             dy = 0;
@@ -115,64 +120,71 @@ public class Player extends Actor
         // Update the location
         
         // For fixed map
-        //setLocation(getX() + dx, getY() + dy);
+        //setLocation(getExactX() + dx, getExactY() + dy);
         
         // For side scrolling
         move(dx, dy, false);
     }
     
-    public void move(int dx, int dy, boolean collision) {
+    public void move(double dx, double dy, boolean collision) {
         MyWorld world = (MyWorld) getWorld();
         
-        boolean playerWithinCameraBoundsX = (getX() > 200 || dx > 0) && (getX() < 400 || dx < 0);
-        boolean cameraOutOfMapBoundsX = (world.bottomLeft.getX() - dx > 0 && dx <= 0) || (world.bottomRight.getX() - dx < world.getWidth() && dx >= 0);
+        boolean playerWithinCameraBoundsX = (getExactX() > 200 || dx > 0) && (getExactX() < 400 || dx < 0);
+        boolean cameraOutOfMapBoundsX = (world.bottomLeft.getExactX() - dx > 0 && dx <= 0) || (world.bottomRight.getExactX() - dx < world.getWidth() && dx >= 0);
         if (cameraOutOfMapBoundsX || playerWithinCameraBoundsX) {
             if (cameraOutOfMapBoundsX) {
-                int offset = 0;
+                double offset = 0;
                 if (dx < 0) {
-                    offset = 0 - world.bottomLeft.getX();
+                    offset = 0 - world.bottomLeft.getExactX();
                 } else {
-                    offset = world.getWidth() - world.bottomRight.getX();
+                    offset = world.getWidth() - world.bottomRight.getExactX();
                 }
-                setLocation(getX() + offset, getY());
+                setLocation(getExactX() + offset, getExactY());
                 moveWalls(-offset, 0);
             }
-            setLocation(getX() + dx, getY());
+            setLocation(getExactX() + dx, getExactY());
         } else {
             moveWalls(dx, 0);
         }
 
-        boolean playerWithinCameraBoundsY = (getY() > 100 || dy > 0) && (getY() < 300 || dy < 0);
-        boolean cameraOutOfMapBoundsY =  (world.bottomLeft.getY() - dy < world.getHeight() && dy >= 0) || (world.topRight.getY() - dy > 0 && dy <= 0);
+        boolean playerWithinCameraBoundsY = (getExactY() > 100 || dy > 0) && (getExactY() < 300 || dy < 0);
+        boolean cameraOutOfMapBoundsY =  (world.bottomLeft.getExactY() - dy < world.getHeight() && dy >= 0) || (world.topRight.getExactY() - dy > 0 && dy <= 0);
         if (cameraOutOfMapBoundsY || playerWithinCameraBoundsY) {
             if (cameraOutOfMapBoundsY) {
-                int offset = 0;
+                double offset = 0;
                 if (dy < 0) {
-                    offset = 0 + world.topRight.getY();
+                    offset = 0 + world.topRight.getExactY();
                 } else {
-                    offset = world.getHeight() - world.bottomLeft.getY();
+                    offset = world.getHeight() - world.bottomLeft.getExactY();
                 }
-                setLocation(getX(), getY() + offset);
+                setLocation(getExactX(), getExactY() + offset);
                 moveWalls(0, -offset);
             }
-            setLocation(getX(), getY() + dy);
+            setLocation(getExactX(), getExactY() + dy);
         } else {
             moveWalls(0, dy);
         }
     }
     
-    public void moveWalls(int x, int y) {
+    public void flipImages() {
+        for (int i = 0; i < gifImages.length; i++) {
+            gifImages[i].flipImage();
+        }
+    }
+    
+    public void moveWalls(double x, double y) {
         List<StaticActor> walls = getWorld().getObjects(StaticActor.class); 
         for (int i = 0; i < walls.size(); i++) {
             StaticActor wall = walls.get(i);
-            wall.setLocation(wall.getX() - x, wall.getY() - y);
+            wall.setLocation(wall.getExactX() - x, wall.getExactY() - y);
         }
+        
     }
     
     /**
      * Returns 1 if it is positive, -1 if it is negative, or 0.
      */
-    public int getDirection(int x) {
+    public double getDirection(double x) {
         if (x > 0) {
             return 1;
         } else if (x < 0) {
@@ -186,9 +198,9 @@ public class Player extends Actor
      * Works by moving the player to the new position, checking for a collision, 
      * and moving the player back.
      */
-    public boolean willCollideAt(int x, int y) {
-        int oldX = getX();
-        int oldY = getY();
+    public boolean willCollideAt(double x, double y) {
+        double oldX = getExactX();
+        double oldY = getExactY();
         setLocation(x, y);
         boolean isTouching = !getIntersectingObjects(Actor.class).isEmpty();
         setLocation(oldX, oldY);
